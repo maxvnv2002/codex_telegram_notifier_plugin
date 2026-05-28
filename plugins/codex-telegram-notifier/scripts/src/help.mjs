@@ -29,6 +29,7 @@ Options:
   --device-name NAME    Human-readable local device name.
   --config PATH         Alternate local config path.
   --codex-config PATH   Alternate Codex config.toml path.
+  --stable-wrapper PATH Alternate stable notify wrapper path.
   --message TEXT        Manual test notification text.
   --skip-codex-notify   Do not edit Codex config.toml notify command.
   --idle-threshold-ms N  Treat the user as active while idle time is below N ms.
@@ -42,6 +43,7 @@ Environment:
   CODEX_TELEGRAM_SERVER_URL
   CODEX_TELEGRAM_DEVICE_NAME
   CODEX_TELEGRAM_CONFIG
+  CODEX_TELEGRAM_STABLE_WRAPPER
   CODEX_TELEGRAM_IDLE_THRESHOLD_MS
   CODEX_TELEGRAM_SUPPRESS_WHEN_CODEX_ACTIVE
   CODEX_TELEGRAM_FORCE_CODEX_ACTIVE

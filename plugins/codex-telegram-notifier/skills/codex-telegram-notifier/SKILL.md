@@ -32,7 +32,7 @@ For wrapper repair on an already configured device:
 node "$SCRIPT" /notifier_start
 ```
 
-The setup command registers the device with the backend, stores device state in `~/.codex-telegram-notifier/config.json`, and installs the Codex `notify` wrapper in `~/.codex/config.toml`.
+The setup command registers the device with the backend, stores device state in `~/.codex-telegram-notifier/config.json`, writes a stable wrapper to `~/.codex-telegram-notifier/bin/codex-telegram-notifier.mjs`, and installs that wrapper in `~/.codex/config.toml`.
 
 ## Setup
 
@@ -70,10 +70,10 @@ node scripts/codex-telegram-notifier.mjs test --message "Manual test from Codex"
 Automatic turn-ended notification runs through Codex `notify`:
 
 ```toml
-notify = ["node", "<installed-plugin>/scripts/codex-telegram-notifier.mjs", "turn-ended"]
+notify = ["node", "~/.codex-telegram-notifier/bin/codex-telegram-notifier.mjs", "turn-ended"]
 ```
 
-The wrapper calls the previous Codex `notify` command first, then sends Telegram.
+The actual path is absolute in the config. The stable wrapper resolves the newest installed plugin version from Codex's plugin cache, then the resolved plugin calls the previous Codex `notify` command first and sends Telegram.
 
 Automatic notifications are suppressed for plan-mode title-only intermediate payloads and when the local user is active with Codex visible/active. Waiting-for-input payloads are sent as `waiting_for_input`, including suggested response options when Codex exposes them. Manual `test` notifications bypass suppression.
 

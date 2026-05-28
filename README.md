@@ -48,15 +48,15 @@ If the device is already registered, you can run the same command without a code
 /notifier_start
 ```
 
-The wrapper edits `~/.codex/config.toml` so Codex runs:
+The wrapper writes a stable launcher to `~/.codex-telegram-notifier/bin/codex-telegram-notifier.mjs` and edits `~/.codex/config.toml` so Codex runs:
 
 ```text
-node <installed-plugin>/scripts/codex-telegram-notifier.mjs turn-ended
+node ~/.codex-telegram-notifier/bin/codex-telegram-notifier.mjs turn-ended
 ```
 
-It first calls the previous `notify` command, then sends Telegram.
+The stable launcher resolves the newest installed plugin version from Codex's plugin cache. The resolved plugin first calls the previous `notify` command, then sends Telegram.
 
-Automatic notifications are suppressed when Codex emits plan-mode title-only intermediate events or when the local user is active on the machine. By default, "active" means idle time below `60000ms`; manual test notifications still send.
+Automatic notifications are suppressed when Codex emits plan-mode title-only intermediate events, or when the local user is active and Codex is the active/visible app. If the user is active in another app, the notification still sends. Manual test notifications always send.
 
 ## Manual Setup Fallback
 
@@ -92,7 +92,7 @@ Refresh the marketplace snapshot:
 codex plugin marketplace upgrade codex-telegram-notifier
 ```
 
-Then restart Codex Desktop.
+Then restart Codex Desktop. After `/notifier_start` has installed the stable launcher once, `~/.codex/config.toml` does not need to be repaired for every plugin version update.
 
 ## Repository Layout
 
