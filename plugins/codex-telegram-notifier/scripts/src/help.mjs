@@ -10,22 +10,27 @@ Usage:
   node scripts/codex-telegram-notifier.mjs status
   node scripts/codex-telegram-notifier.mjs test [--message TEXT]
   node scripts/codex-telegram-notifier.mjs notify
+  node scripts/codex-telegram-notifier.mjs turn-ended
 
 Commands:
   install  Connect the plugin to Codex Desktop and run setup.
   /notifier_start
-           Register this device from a Codex setup prompt.
-  setup    Register this local Codex device with the backend.
+           Register this device and install the Codex notify wrapper.
+  setup    Register this local Codex device and install the Codex notify wrapper.
   status   Print safe local registration state without secrets.
   test     Send a manual signed notification using the saved config.
   notify   Read Codex Stop hook JSON from stdin and send a notification.
+  turn-ended
+           Codex notify wrapper. Runs the original Codex notify command, then Telegram.
 
 Options:
   --pairing-code CODE   Pairing code from the Telegram bot.
   --server-url URL      Backend URL. Default: ${DEFAULT_SERVER_URL}
   --device-name NAME    Human-readable local device name.
   --config PATH         Alternate local config path.
+  --codex-config PATH   Alternate Codex config.toml path.
   --message TEXT        Manual test notification text.
+  --skip-codex-notify   Do not edit Codex config.toml notify command.
   --skip-setup          Install into Codex without registering a device.
   --skip-codex-config   Create local marketplace without editing ~/.codex/config.toml.
 

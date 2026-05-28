@@ -4,6 +4,7 @@ import { installCommand } from "./commands/install.mjs";
 import { notifyCommand, testCommand } from "./commands/notify.mjs";
 import { setupCommand } from "./commands/setup.mjs";
 import { statusCommand } from "./commands/status.mjs";
+import { turnEndedCommand } from "./commands/turn-ended.mjs";
 
 export async function main(argv) {
   const command = argv[0];
@@ -37,6 +38,11 @@ export async function main(argv) {
 
   if (command === "notify") {
     await notifyCommand(args);
+    return;
+  }
+
+  if (command === "turn-ended") {
+    await turnEndedCommand(args);
     return;
   }
 

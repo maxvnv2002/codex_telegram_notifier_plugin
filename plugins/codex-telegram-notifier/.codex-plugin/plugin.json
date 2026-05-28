@@ -1,6 +1,6 @@
 {
   "name": "codex-telegram-notifier",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Send Codex completion notifications to Telegram through the Codex Telegram Notifier backend.",
   "author": {
     "name": "Maks Ivanov"
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Codex Telegram Notifier",
     "shortDescription": "Send Codex completion notifications to Telegram.",
-    "longDescription": "Registers a local Codex device with the Codex Telegram Notifier backend and sends signed Telegram notifications when Codex finishes a turn.",
+    "longDescription": "Registers a local Codex device with the Codex Telegram Notifier backend, preserves the existing Codex Desktop notifier, and sends signed Telegram notifications when Codex finishes a turn.",
     "developerName": "Maks Ivanov",
     "category": "Productivity",
     "capabilities": [

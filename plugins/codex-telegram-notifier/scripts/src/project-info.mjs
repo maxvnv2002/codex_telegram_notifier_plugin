@@ -11,6 +11,8 @@ export function resolveProjectCwd(hookInput) {
     ["workspace"],
     ["workspace_dir"],
     ["workspaceDir"],
+    ["current-working-directory"],
+    ["currentWorkingDirectory"],
   ]);
   return fromInput || process.env.CLAUDE_PROJECT_DIR || process.env.PWD || process.cwd();
 }

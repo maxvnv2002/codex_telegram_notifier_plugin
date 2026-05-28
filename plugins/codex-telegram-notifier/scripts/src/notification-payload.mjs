@@ -22,9 +22,12 @@ function resolveSessionId(hookInput) {
   return (
     getFirstString(hookInput, [
       ["session_id"],
+      ["session-id"],
       ["sessionId"],
       ["session", "id"],
       ["codexSessionId"],
+      ["thread-id"],
+      ["threadId"],
     ]) ||
     process.env.CODEX_SESSION_ID ||
     null
@@ -35,6 +38,7 @@ function resolveTurnId(hookInput) {
   return (
     getFirstString(hookInput, [
       ["turn_id"],
+      ["turn-id"],
       ["turnId"],
       ["turn", "id"],
       ["codexTurnId"],
@@ -49,6 +53,7 @@ function resolveModel(hookInput) {
     getFirstString(hookInput, [
       ["model"],
       ["model_name"],
+      ["model-name"],
       ["modelName"],
       ["metadata", "model"],
     ]) ||

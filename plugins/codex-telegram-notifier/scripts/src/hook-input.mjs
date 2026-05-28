@@ -11,8 +11,13 @@ export function parseHookInput(rawInput) {
 export function resolveNotificationMessage(hookInput) {
   const direct = getFirstString(hookInput, [
     ["last_assistant_message"],
+    ["last-assistant-message"],
+    ["lastAssistantMessage"],
     ["assistant_message"],
+    ["assistant-message"],
+    ["assistantMessage"],
     ["final_message"],
+    ["final-message"],
     ["finalMessage"],
     ["message"],
     ["summary"],
@@ -52,6 +57,8 @@ function findLastAssistantMessage(value) {
     getByPath(value, ["conversation"]),
     getByPath(value, ["transcript"]),
     getByPath(value, ["events"]),
+    getByPath(value, ["input-messages"]),
+    getByPath(value, ["inputMessages"]),
   ].filter(Array.isArray);
 
   for (const items of arrays) {

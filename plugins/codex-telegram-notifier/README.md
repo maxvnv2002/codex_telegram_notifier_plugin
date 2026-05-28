@@ -1,6 +1,6 @@
 # Codex Telegram Notifier Plugin
 
-Node.js Codex plugin that sends a Telegram message when Codex finishes work. It pairs this local device with the deployed backend at `https://codex.signalhex.ru`, then uses a signed `Stop` hook notification.
+Node.js Codex plugin that sends a Telegram message when Codex finishes work. It pairs this local device with the deployed backend at `https://codex.signalhex.ru`, then installs a signed Codex `notify` wrapper.
 
 ## How It Works
 
@@ -8,7 +8,8 @@ Node.js Codex plugin that sends a Telegram message when Codex finishes work. It 
 2. Copy the pairing code from Telegram.
 3. Run plugin setup with that code.
 4. The plugin generates a local `deviceId` and `deviceSecret`, registers them with the backend, and stores local state outside this repo.
-5. When Codex stops, `hooks.json` runs the notifier script and sends a signed notification.
+5. On setup, the plugin updates `~/.codex/config.toml` and preserves the previous `notify` command.
+6. When a Codex turn ends, the wrapper runs the previous notifier first, then sends Telegram.
 
 Local state is stored at:
 
@@ -56,6 +57,12 @@ Get a pairing code from the Telegram bot, then ask Codex:
 
 Codex will run the local setup command from the installed plugin cache.
 
+If this device is already paired and you only need to repair automatic notifications, run:
+
+```text
+/notifier_start
+```
+
 Manual Terminal fallback:
 
 ```bash
@@ -66,6 +73,12 @@ SCRIPT="$(find "${CODEX_HOME:-$HOME/.codex}/plugins/cache" \
 node "$SCRIPT" setup \
   --pairing-code ABCD-1234-EFGH \
   --device-name "MacBook Maks"
+```
+
+Repair notify wrapper for an already configured device:
+
+```bash
+node "$SCRIPT" /notifier_start
 ```
 
 You can also pass values through environment variables:
@@ -82,7 +95,7 @@ node scripts/codex-telegram-notifier.mjs setup
 node scripts/codex-telegram-notifier.mjs status
 ```
 
-This prints safe state only. It does not show `deviceSecret`.
+This prints safe state only. It does not show `deviceSecret`. It also reports whether the Codex notify wrapper is installed.
 
 ## Test Notification
 
@@ -94,7 +107,25 @@ node scripts/codex-telegram-notifier.mjs test --message "Manual test from Codex"
 
 You should receive a Telegram message in the chat that owns the pairing code.
 
-## Codex Stop Hook
+## Codex Notify Wrapper
+
+Setup writes a top-level `notify` entry to `~/.codex/config.toml`:
+
+```toml
+notify = ["node", "<installed-plugin>/scripts/codex-telegram-notifier.mjs", "turn-ended"]
+```
+
+If a previous `notify` command exists, it is stored in `~/.codex-telegram-notifier/config.json` under `codexNotify.originalNotify`. The wrapper calls that original command first, then sends Telegram. This keeps the built-in Codex Desktop turn-ended notifier working.
+
+A one-time backup is written next to the Codex config:
+
+```text
+~/.codex/config.toml.codex-telegram-notifier.bak
+```
+
+Restart Codex Desktop or start a new session after changing the wrapper.
+
+## Legacy Stop Hook
 
 The plugin includes:
 
@@ -116,7 +147,9 @@ The plugin includes:
 }
 ```
 
-The hook command reads Codex hook JSON from stdin. It tries to include:
+The hook command can still be called manually and reads Codex hook JSON from stdin. The primary automatic path is the `notify` wrapper above.
+
+The notifier tries to include:
 
 - project directory name;
 - current git branch;
@@ -142,6 +175,8 @@ scripts/src/commands/install.mjs     local Codex marketplace install and setup w
 scripts/src/commands/setup.mjs       device registration flow
 scripts/src/commands/notify.mjs      Stop hook and manual test notification flow
 scripts/src/commands/status.mjs      safe local config status
+scripts/src/commands/turn-ended.mjs  Codex notify wrapper entrypoint
+scripts/src/codex-notify-config.mjs  Codex config notify wrapper install/read helpers
 scripts/src/config.mjs               local config path, load/save, URL validation
 scripts/src/http.mjs                 JSON fetch wrapper with timeout
 scripts/src/signature.mjs            HMAC SHA256 signing
@@ -206,6 +241,8 @@ Common problems:
 - `Pairing code already used`: pairing codes are one-time; create a new one.
 - `Request timed out`: check backend availability and whether the server can reach Telegram.
 - No Telegram message after a successful setup: check backend logs and webhook health.
+- `Codex notify wrapper: not installed`: run `/notifier_start` from Codex or `node "$SCRIPT" /notifier_start` from Terminal.
+- Built-in Codex Desktop notifications stopped: restore `notify` from `~/.codex-telegram-notifier/config.json` or from `~/.codex/config.toml.codex-telegram-notifier.bak`.
 
 ## Update
 

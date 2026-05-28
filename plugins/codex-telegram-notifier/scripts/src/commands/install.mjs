@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import readline from "node:readline/promises";
 import process from "node:process";
 import { stringOption } from "../args.mjs";
+import { isConfigured, loadConfig, resolveConfigPath } from "../config.mjs";
 import { setupCommand } from "./setup.mjs";
 
 const MARKETPLACE_NAME = "local-codex-telegram";
@@ -136,11 +137,11 @@ enabled = true`);
 }
 
 async function buildSetupArgs(args) {
-  const pairingCode = await resolvePairingCode(args);
   const setupArgs = {
     ...args,
     _: [],
   };
+  const pairingCode = await resolvePairingCode(setupArgs);
 
   if (pairingCode) {
     setupArgs["pairing-code"] = pairingCode;
@@ -158,6 +159,10 @@ async function resolvePairingCode(args) {
 
   if (fromArgs) {
     return fromArgs;
+  }
+
+  if (isConfigured(loadConfig(resolveConfigPath(args)))) {
+    return "";
   }
 
   if (!process.stdin.isTTY) {

@@ -2,7 +2,7 @@
 
 Marketplace repository for the `codex-telegram-notifier` Codex plugin.
 
-The plugin sends Telegram notifications when Codex finishes work. It registers your local device with the backend at `https://codex.signalhex.ru`, stores the generated device secret locally, and sends signed notifications from a Codex `Stop` hook.
+The plugin sends Telegram notifications when Codex finishes work. It registers your local device with the backend at `https://codex.signalhex.ru`, stores the generated device secret locally, and installs a Codex `notify` wrapper that preserves the existing Desktop notifier.
 
 ## Install Through Codex
 
@@ -42,6 +42,20 @@ Then in Codex, send:
 
 Codex will run the plugin setup command locally and register this device.
 
+If the device is already registered, you can run the same command without a code to repair the local Codex notify wrapper:
+
+```text
+/notifier_start
+```
+
+The wrapper edits `~/.codex/config.toml` so Codex runs:
+
+```text
+node <installed-plugin>/scripts/codex-telegram-notifier.mjs turn-ended
+```
+
+It first calls the previous `notify` command, then sends Telegram.
+
 ## Manual Setup Fallback
 
 If you want to run setup from Terminal instead of asking Codex, locate the installed script and run it directly:
@@ -54,6 +68,12 @@ SCRIPT="$(find "${CODEX_HOME:-$HOME/.codex}/plugins/cache" \
 node "$SCRIPT" setup \
   --pairing-code ABCD-1234-EFGH \
   --device-name "MacBook Maks"
+```
+
+Repair notify wrapper for an already configured device:
+
+```bash
+node "$SCRIPT" /notifier_start
 ```
 
 Test notification:

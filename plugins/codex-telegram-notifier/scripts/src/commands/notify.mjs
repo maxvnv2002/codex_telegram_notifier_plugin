@@ -30,6 +30,17 @@ export async function notifyCommand(args) {
   await sendNotificationFromHookInput(args, hookInput, { failOnError: false });
 }
 
+export async function sendNotificationFromRawInput(args, rawInput, options) {
+  let hookInput = {};
+  try {
+    hookInput = parseHookInput(rawInput);
+  } catch (error) {
+    await logSafe(`Failed to parse notify input: ${errorMessage(error)}`);
+  }
+
+  await sendNotificationFromHookInput(args, hookInput, options);
+}
+
 async function readHookInput() {
   try {
     const rawInput = await readStdin();
@@ -42,7 +53,13 @@ async function readHookInput() {
 
 async function sendNotificationFromHookInput(args, hookInput, options) {
   const configPath = resolveConfigPath(args);
-  const config = loadConfig(configPath);
+  let config;
+  try {
+    config = loadConfig(configPath);
+  } catch (error) {
+    await handleNotificationFailure(`Cannot read notifier config ${configPath}: ${errorMessage(error)}`, options);
+    return;
+  }
 
   if (!isConfigured(config)) {
     await handleNotificationFailure(
