@@ -1,0 +1,36 @@
+{
+  "name": "codex-telegram-notifier",
+  "version": "0.1.0",
+  "description": "Send Codex completion notifications to Telegram through the Codex Telegram Notifier backend.",
+  "author": {
+    "name": "Maks Ivanov"
+  },
+  "homepage": "https://github.com/maxvnv2002/codex_telegram_notifier_plugin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxvnv2002/codex_telegram_notifier_plugin.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "telegram",
+    "notifications"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex Telegram Notifier",
+    "shortDescription": "Send Codex completion notifications to Telegram.",
+    "longDescription": "Registers a local Codex device with the Codex Telegram Notifier backend and sends signed Telegram notifications when Codex finishes a turn.",
+    "developerName": "Maks Ivanov",
+    "category": "Productivity",
+    "capabilities": [
+      "Write"
+    ],
+    "websiteURL": "https://github.com/maxvnv2002/codex_telegram_notifier_plugin",
+    "brandColor": "#229ED9",
+    "screenshots": [],
+    "defaultPrompt": [
+      "Use the Codex Telegram Notifier plugin when I need setup help, status checks, or manual notification tests."
+    ]
+  }
+}

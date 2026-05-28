@@ -1,0 +1,13 @@
+.DS_Store
+.idea
+
+node_modules
+dist
+build
+coverage
+*.log
+*.tsbuildinfo
+
+.env
+.env.*
+.codex-telegram-notifier

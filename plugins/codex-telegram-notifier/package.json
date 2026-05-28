@@ -1,0 +1,19 @@
+{
+  "name": "codex-telegram-notifier-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Codex plugin that sends completion notifications to Telegram through Codex Telegram Notifier.",
+  "bin": {
+    "codex-telegram-notifier": "./scripts/codex-telegram-notifier.mjs"
+  },
+  "scripts": {
+    "help": "node scripts/codex-telegram-notifier.mjs --help",
+    "install-plugin": "node scripts/codex-telegram-notifier.mjs install",
+    "status": "node scripts/codex-telegram-notifier.mjs status",
+    "test": "node scripts/codex-telegram-notifier.mjs test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

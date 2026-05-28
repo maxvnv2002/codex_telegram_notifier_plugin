@@ -1,0 +1,20 @@
+{
+  "name": "codex-telegram-notifier",
+  "interface": {
+    "displayName": "Codex Telegram Notifier"
+  },
+  "plugins": [
+    {
+      "name": "codex-telegram-notifier",
+      "source": {
+        "source": "local",
+        "path": "./plugins/codex-telegram-notifier"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
