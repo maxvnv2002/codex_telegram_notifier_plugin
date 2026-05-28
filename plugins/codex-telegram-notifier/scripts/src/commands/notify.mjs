@@ -7,6 +7,7 @@ import { errorMessage } from "../errors.mjs";
 import { parseHookInput } from "../hook-input.mjs";
 import { requestJson } from "../http.mjs";
 import { logSafe } from "../logging.mjs";
+import { shouldSuppressNotification } from "../notification-filter.mjs";
 import { buildNotificationPayload } from "../notification-payload.mjs";
 import { createSignature } from "../signature.mjs";
 import { readStdin } from "../stdin.mjs";
@@ -21,7 +22,7 @@ export async function testCommand(args) {
     message,
   };
 
-  await sendNotificationFromHookInput(args, hookInput, { failOnError: true });
+  await sendNotificationFromHookInput(args, hookInput, { failOnError: true, respectSuppression: false });
   console.log("Test notification sent.");
 }
 
@@ -70,6 +71,12 @@ async function sendNotificationFromHookInput(args, hookInput, options) {
   }
 
   const notification = buildNotificationPayload(config, hookInput);
+  const suppression = shouldSuppressNotification({ config, args, hookInput, notification, options });
+  if (suppression) {
+    await logSafe(`Notification suppressed: ${suppression.reason}`);
+    return;
+  }
+
   const rawBody = JSON.stringify(notification);
   const timestamp = String(Date.now());
   const signature = createSignature(timestamp, rawBody, config.deviceSecret);

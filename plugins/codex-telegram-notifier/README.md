@@ -158,6 +158,33 @@ The notifier tries to include:
 - model;
 - final assistant message or a fallback completion message.
 
+## Notification Suppression
+
+Automatic notifications are filtered before sending:
+
+- plan-mode title-only intermediate events such as `{"title":"..."}` are suppressed;
+- events with `waitingOnApproval` or `waitingOnUserInput` active flags are suppressed;
+- if the user is active on the machine, the notification is suppressed until the idle threshold is reached.
+
+By default, "user active" means idle time is below `60000ms`. Manual `test` notifications ignore this suppression and always send.
+
+Idle detection:
+
+- macOS: `IOHIDSystem` via `ioreg`;
+- Linux X11: `xprintidle` when installed;
+- Linux GNOME/Wayland: GNOME IdleMonitor via `gdbus` when available;
+- Windows: `GetLastInputInfo`.
+
+If idle time cannot be detected on the current system, the plugin sends the notification rather than dropping it.
+
+Optional environment overrides:
+
+```bash
+CODEX_TELEGRAM_IDLE_THRESHOLD_MS=120000
+CODEX_TELEGRAM_SUPPRESS_WHEN_USER_ACTIVE=false
+CODEX_TELEGRAM_SUPPRESS_PLAN_TITLE_ONLY=false
+```
+
 Notification failures are written to:
 
 ```text
@@ -179,10 +206,12 @@ scripts/src/commands/turn-ended.mjs  Codex notify wrapper entrypoint
 scripts/src/codex-notify-config.mjs  Codex config notify wrapper install/read helpers
 scripts/src/config.mjs               local config path, load/save, URL validation
 scripts/src/http.mjs                 JSON fetch wrapper with timeout
+scripts/src/notification-filter.mjs  plan-mode and user-activity suppression
 scripts/src/signature.mjs            HMAC SHA256 signing
 scripts/src/hook-input.mjs           hook JSON parsing and message extraction
 scripts/src/project-info.mjs         project name and git branch discovery
 scripts/src/notification-payload.mjs backend notification payload builder
+scripts/src/user-activity.mjs        cross-platform idle detection
 scripts/src/logging.mjs              local safe log writer
 ```
 
@@ -242,6 +271,8 @@ Common problems:
 - `Request timed out`: check backend availability and whether the server can reach Telegram.
 - No Telegram message after a successful setup: check backend logs and webhook health.
 - `Codex notify wrapper: not installed`: run `/notifier_start` from Codex or `node "$SCRIPT" /notifier_start` from Terminal.
+- `Notification suppressed: User active`: this is expected when you are actively using the machine. Increase/decrease `CODEX_TELEGRAM_IDLE_THRESHOLD_MS` if needed.
+- `Notification suppressed: Plan title-only intermediate notification`: this is expected in plan mode for non-final title events.
 - Built-in Codex Desktop notifications stopped: restore `notify` from `~/.codex-telegram-notifier/config.json` or from `~/.codex/config.toml.codex-telegram-notifier.bak`.
 
 ## Update

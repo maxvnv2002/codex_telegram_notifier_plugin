@@ -72,7 +72,35 @@ export function isNotifyWrapperCommand(command) {
     return false;
   }
 
-  return normalized.some((part) => part.endsWith("codex-telegram-notifier.mjs")) && normalized.includes(WRAPPER_COMMAND);
+  if (isDirectNotifyWrapperCommand(normalized)) {
+    return true;
+  }
+
+  const previousNotify = extractPreviousNotifyCommand(normalized);
+  return Boolean(previousNotify && isDirectNotifyWrapperCommand(previousNotify));
+}
+
+function isDirectNotifyWrapperCommand(command) {
+  return command.some((part) => part.endsWith("codex-telegram-notifier.mjs")) && command.includes(WRAPPER_COMMAND);
+}
+
+function extractPreviousNotifyCommand(command) {
+  const markerIndex = command.indexOf("--previous-notify");
+  if (markerIndex === -1) {
+    return null;
+  }
+
+  const raw = command[markerIndex + 1];
+  if (typeof raw !== "string" || !raw.trim()) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return normalizeNotifyCommand(parsed);
+  } catch {
+    return null;
+  }
 }
 
 function resolveEntrypointPath() {

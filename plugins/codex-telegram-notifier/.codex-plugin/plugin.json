@@ -1,6 +1,6 @@
 {
   "name": "codex-telegram-notifier",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Send Codex completion notifications to Telegram through the Codex Telegram Notifier backend.",
   "author": {
     "name": "Maks Ivanov"

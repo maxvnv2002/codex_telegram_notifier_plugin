@@ -56,6 +56,8 @@ node <installed-plugin>/scripts/codex-telegram-notifier.mjs turn-ended
 
 It first calls the previous `notify` command, then sends Telegram.
 
+Automatic notifications are suppressed when Codex emits plan-mode title-only intermediate events or when the local user is active on the machine. By default, "active" means idle time below `60000ms`; manual test notifications still send.
+
 ## Manual Setup Fallback
 
 If you want to run setup from Terminal instead of asking Codex, locate the installed script and run it directly:

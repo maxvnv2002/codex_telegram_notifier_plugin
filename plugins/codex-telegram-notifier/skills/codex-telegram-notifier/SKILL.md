@@ -75,6 +75,8 @@ notify = ["node", "<installed-plugin>/scripts/codex-telegram-notifier.mjs", "tur
 
 The wrapper calls the previous Codex `notify` command first, then sends Telegram.
 
+Automatic notifications are suppressed for plan-mode title-only intermediate payloads and while the local user is active. Manual `test` notifications bypass suppression.
+
 The legacy Stop hook command is:
 
 ```bash

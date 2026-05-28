@@ -1,10 +1,12 @@
 import { isConfigured, loadConfig, resolveConfigPath } from "../config.mjs";
 import { getCodexNotifyWrapperStatus } from "../codex-notify-config.mjs";
+import { getNotificationPolicy } from "../notification-filter.mjs";
 
 export function statusCommand(args) {
   const configPath = resolveConfigPath(args);
   const config = loadConfig(configPath);
   const notifyStatus = getCodexNotifyWrapperStatus(args, config);
+  const policy = getNotificationPolicy(config, args);
 
   console.log("Codex Telegram Notifier status");
   console.log(`Config: ${configPath}`);
@@ -27,4 +29,7 @@ export function statusCommand(args) {
   console.log("Device secret: hidden");
   console.log(`Codex notify wrapper: ${notifyStatus.installed ? "installed" : "not installed"}`);
   console.log(`Original Codex notify preserved: ${notifyStatus.hasOriginalNotify ? "yes" : "no"}`);
+  console.log(`Suppress plan title-only events: ${policy.suppressPlanTitleOnly ? "yes" : "no"}`);
+  console.log(`Suppress when user active: ${policy.suppressWhenUserActive ? "yes" : "no"}`);
+  console.log(`Idle threshold: ${policy.idleThresholdMs}ms`);
 }
