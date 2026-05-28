@@ -1,6 +1,6 @@
 # Codex Telegram Notifier Plugin
 
-Node.js Codex plugin that sends a Telegram message when Codex finishes work. It pairs this local device with the deployed backend at `https://codex.signalhex.ru`, then installs a signed Codex `notify` wrapper.
+Node.js Codex plugin that sends Telegram messages when Codex finishes work or waits for a user answer. It pairs this local device with the deployed backend at `https://codex.signalhex.ru`, then installs a signed Codex `notify` wrapper.
 
 ## How It Works
 
@@ -156,6 +156,8 @@ The notifier tries to include:
 - session id;
 - turn id;
 - model;
+- event type: `completed` or `waiting_for_input`;
+- response options when Codex exposes suggested answers/actions;
 - final assistant message or a fallback completion message.
 
 ## Notification Suppression
@@ -163,8 +165,9 @@ The notifier tries to include:
 Automatic notifications are filtered before sending:
 
 - plan-mode title-only intermediate events such as `{"title":"..."}` are suppressed;
-- events with `waitingOnApproval` or `waitingOnUserInput` active flags are suppressed;
-- if the user is active on the machine, the notification is suppressed until the idle threshold is reached.
+- events with `waitingOnApproval` or `waitingOnUserInput` active flags are sent as `waiting_for_input`;
+- if the user is active and Codex is the active/visible app, the notification is suppressed;
+- if the user is active in another app, the notification is sent.
 
 By default, "user active" means idle time is below `60000ms`. Manual `test` notifications ignore this suppression and always send.
 
@@ -175,15 +178,24 @@ Idle detection:
 - Linux GNOME/Wayland: GNOME IdleMonitor via `gdbus` when available;
 - Windows: `GetLastInputInfo`.
 
-If idle time cannot be detected on the current system, the plugin sends the notification rather than dropping it.
+Codex active-window detection:
+
+- macOS app: frontmost app name via `osascript`;
+- macOS CLI: frontmost terminal app plus Codex in the current process ancestry;
+- Linux: focused window via `xdotool`, `hyprctl`, or `swaymsg`, plus Codex process ancestry for terminal windows.
+
+If idle time or active-window state cannot be detected on the current system, the plugin sends the notification rather than dropping it.
 
 Optional environment overrides:
 
 ```bash
 CODEX_TELEGRAM_IDLE_THRESHOLD_MS=120000
-CODEX_TELEGRAM_SUPPRESS_WHEN_USER_ACTIVE=false
+CODEX_TELEGRAM_SUPPRESS_WHEN_CODEX_ACTIVE=false
+CODEX_TELEGRAM_FORCE_CODEX_ACTIVE=false
 CODEX_TELEGRAM_SUPPRESS_PLAN_TITLE_ONLY=false
 ```
+
+`CODEX_TELEGRAM_SUPPRESS_WHEN_USER_ACTIVE=false` is still accepted for older configs, but the preferred setting is `CODEX_TELEGRAM_SUPPRESS_WHEN_CODEX_ACTIVE=false`.
 
 Notification failures are written to:
 
@@ -207,6 +219,7 @@ scripts/src/codex-notify-config.mjs  Codex config notify wrapper install/read he
 scripts/src/config.mjs               local config path, load/save, URL validation
 scripts/src/http.mjs                 JSON fetch wrapper with timeout
 scripts/src/notification-filter.mjs  plan-mode and user-activity suppression
+scripts/src/codex-activity.mjs       active Codex window detection
 scripts/src/signature.mjs            HMAC SHA256 signing
 scripts/src/hook-input.mjs           hook JSON parsing and message extraction
 scripts/src/project-info.mjs         project name and git branch discovery
