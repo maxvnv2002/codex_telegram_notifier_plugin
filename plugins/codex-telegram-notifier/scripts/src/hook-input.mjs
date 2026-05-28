@@ -38,6 +38,59 @@ export function resolveNotificationMessage(hookInput) {
   return "Codex завершил работу.";
 }
 
+export function resolveNotificationEventType(hookInput) {
+  if (isWaitingForHumanInput(hookInput) || resolveResponseOptions(hookInput).length > 0) {
+    return "waiting_for_input";
+  }
+
+  return "completed";
+}
+
+export function resolveResponseOptions(hookInput) {
+  const collected = [];
+  collectResponseOptions(hookInput, collected, 0);
+
+  const seen = new Set();
+  return collected
+    .map((value) => limitString(value.trim().replace(/\s+/g, " "), 200))
+    .filter(Boolean)
+    .filter((value) => {
+      const key = value.toLowerCase();
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 10);
+}
+
+export function isWaitingForHumanInput(value, depth = 0) {
+  if (!value || depth > 6) {
+    return false;
+  }
+
+  if (typeof value === "string") {
+    return isWaitingStatus(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.some((item) => isWaitingForHumanInput(item, depth + 1));
+  }
+
+  if (typeof value !== "object") {
+    return false;
+  }
+
+  for (const [key, nestedValue] of Object.entries(value)) {
+    if (isWaitingStatus(key) || isWaitingForHumanInput(nestedValue, depth + 1)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function getFirstString(source, paths) {
   for (const candidatePath of paths) {
     const value = getByPath(source, candidatePath);
@@ -49,6 +102,135 @@ export function getFirstString(source, paths) {
     }
   }
   return "";
+}
+
+const RESPONSE_OPTION_KEYS = new Set([
+  "options",
+  "choices",
+  "suggestions",
+  "actions",
+  "responses",
+  "responseoptions",
+  "suggestedresponses",
+]);
+
+const RESPONSE_OPTION_CONTAINER_KEYS = new Set([
+  "prompt",
+  "input",
+  "approval",
+  "question",
+  "request",
+  "userinput",
+]);
+
+const RESPONSE_OPTION_TEXT_KEYS = [
+  "text",
+  "title",
+  "label",
+  "name",
+  "value",
+  "message",
+  "command",
+  "description",
+];
+
+function collectResponseOptions(value, collected, depth) {
+  if (!value || depth > 6 || collected.length >= 10) {
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectResponseOptions(item, collected, depth + 1);
+      if (collected.length >= 10) {
+        return;
+      }
+    }
+    return;
+  }
+
+  if (typeof value !== "object") {
+    return;
+  }
+
+  for (const [key, nestedValue] of Object.entries(value)) {
+    const normalizedKey = normalizeKey(key);
+    if (RESPONSE_OPTION_KEYS.has(normalizedKey)) {
+      collectOptionList(nestedValue, collected, depth + 1);
+      continue;
+    }
+
+    if (RESPONSE_OPTION_CONTAINER_KEYS.has(normalizedKey)) {
+      collectResponseOptions(nestedValue, collected, depth + 1);
+    }
+  }
+}
+
+function collectOptionList(value, collected, depth) {
+  if (!value || depth > 7 || collected.length >= 10) {
+    return;
+  }
+
+  if (typeof value === "string") {
+    collected.push(value);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectOptionList(item, collected, depth + 1);
+      if (collected.length >= 10) {
+        return;
+      }
+    }
+    return;
+  }
+
+  if (typeof value !== "object") {
+    return;
+  }
+
+  const text = extractOptionText(value);
+  if (text) {
+    collected.push(text);
+  }
+}
+
+function extractOptionText(value) {
+  for (const key of RESPONSE_OPTION_TEXT_KEYS) {
+    const candidate = value[key];
+    if (typeof candidate === "string" && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+
+  return "";
+}
+
+function isWaitingStatus(value) {
+  const normalized = normalizeKey(value);
+  return [
+    "waitingonapproval",
+    "waitingonuserinput",
+    "waitingforinput",
+    "waitingforuserinput",
+    "waitingforapproval",
+    "awaitinginput",
+    "awaitinguserinput",
+    "awaitingapproval",
+    "needsinput",
+    "needsuserinput",
+    "requiresaction",
+    "approvalrequired",
+  ].includes(normalized);
+}
+
+function normalizeKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/g, "")
+    .replaceAll("_", "");
 }
 
 function findLastAssistantMessage(value) {

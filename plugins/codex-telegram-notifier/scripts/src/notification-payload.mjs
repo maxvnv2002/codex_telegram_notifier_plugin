@@ -1,9 +1,15 @@
 import process from "node:process";
-import { getFirstString, resolveNotificationMessage } from "./hook-input.mjs";
+import {
+  getFirstString,
+  resolveNotificationEventType,
+  resolveNotificationMessage,
+  resolveResponseOptions,
+} from "./hook-input.mjs";
 import { resolveGitBranch, resolveProjectCwd, resolveProjectName } from "./project-info.mjs";
 
 export function buildNotificationPayload(config, hookInput) {
   const cwd = resolveProjectCwd(hookInput);
+  const eventType = resolveNotificationEventType(hookInput);
 
   return {
     deviceId: config.deviceId,
@@ -13,6 +19,8 @@ export function buildNotificationPayload(config, hookInput) {
     codexSessionId: resolveSessionId(hookInput),
     codexTurnId: resolveTurnId(hookInput),
     model: resolveModel(hookInput),
+    eventType,
+    responseOptions: eventType === "waiting_for_input" ? resolveResponseOptions(hookInput) : [],
     finishedAt: new Date().toISOString(),
     message: resolveNotificationMessage(hookInput),
   };

@@ -1,6 +1,6 @@
 ---
 name: codex-telegram-notifier
-description: Configure and use the Codex Telegram Notifier plugin to register this device and send Codex completion notifications to Telegram. Trigger when the user writes /notifier_start or asks to set up Telegram notifier.
+description: Configure and use the Codex Telegram Notifier plugin to register this device and send Codex completion/waiting notifications to Telegram. Trigger when the user writes /notifier_start or asks to set up Telegram notifier.
 ---
 
 # Codex Telegram Notifier
@@ -75,7 +75,7 @@ notify = ["node", "<installed-plugin>/scripts/codex-telegram-notifier.mjs", "tur
 
 The wrapper calls the previous Codex `notify` command first, then sends Telegram.
 
-Automatic notifications are suppressed for plan-mode title-only intermediate payloads and while the local user is active. Manual `test` notifications bypass suppression.
+Automatic notifications are suppressed for plan-mode title-only intermediate payloads and when the local user is active with Codex visible/active. Waiting-for-input payloads are sent as `waiting_for_input`, including suggested response options when Codex exposes them. Manual `test` notifications bypass suppression.
 
 The legacy Stop hook command is:
 

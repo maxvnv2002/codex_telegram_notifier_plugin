@@ -1,3 +1,5 @@
+import { getCodexActiveState } from "./codex-activity.mjs";
+import { isWaitingForHumanInput } from "./hook-input.mjs";
 import { getUserIdleMs } from "./user-activity.mjs";
 
 const DEFAULT_IDLE_THRESHOLD_MS = 60_000;
@@ -10,8 +12,13 @@ export function getNotificationPolicy(config = {}, args = {}) {
       args["suppress-plan-title-only"] ?? process.env.CODEX_TELEGRAM_SUPPRESS_PLAN_TITLE_ONLY ?? stored.suppressPlanTitleOnly,
       true,
     ),
-    suppressWhenUserActive: booleanOption(
-      args["suppress-when-user-active"] ?? process.env.CODEX_TELEGRAM_SUPPRESS_WHEN_USER_ACTIVE ?? stored.suppressWhenUserActive,
+    suppressWhenCodexActive: booleanOption(
+      args["suppress-when-codex-active"] ??
+        process.env.CODEX_TELEGRAM_SUPPRESS_WHEN_CODEX_ACTIVE ??
+        args["suppress-when-user-active"] ??
+        process.env.CODEX_TELEGRAM_SUPPRESS_WHEN_USER_ACTIVE ??
+        stored.suppressWhenCodexActive ??
+        stored.suppressWhenUserActive,
       true,
     ),
     idleThresholdMs: positiveNumberOption(
@@ -28,19 +35,27 @@ export function shouldSuppressNotification({ config, args, hookInput, notificati
 
   const policy = getNotificationPolicy(config, args);
 
-  if (policy.suppressPlanTitleOnly && isWaitingForHumanInput(hookInput)) {
-    return { reason: "Codex is waiting for approval/user input." };
-  }
-
-  if (policy.suppressPlanTitleOnly && isPlanTitleOnlyMessage(notification.message)) {
+  if (
+    policy.suppressPlanTitleOnly &&
+    notification.eventType !== "waiting_for_input" &&
+    !isWaitingForHumanInput(hookInput) &&
+    isPlanTitleOnlyMessage(notification.message)
+  ) {
     return { reason: "Plan title-only intermediate notification." };
   }
 
-  if (policy.suppressWhenUserActive) {
+  if (policy.suppressWhenCodexActive) {
     const idle = getUserIdleMs();
-    if (idle.available && idle.idleMs < policy.idleThresholdMs) {
+    if (!idle.available || idle.idleMs >= policy.idleThresholdMs) {
+      return null;
+    }
+
+    const codexActive = getCodexActiveState();
+    if (codexActive.available && codexActive.active) {
       return {
-        reason: `User active (${idle.idleMs}ms idle via ${idle.source}, threshold ${policy.idleThresholdMs}ms).`,
+        reason:
+          `Codex active (${idle.idleMs}ms idle via ${idle.source}, ` +
+          `${codexActive.source}${codexActive.detail ? `: ${codexActive.detail}` : ""}).`,
       };
     }
   }
@@ -81,32 +96,6 @@ export function isPlanTitleOnlyMessage(message) {
 
   const nonPlanKeys = meaningfulKeys.filter((key) => !["title", "type", "status"].includes(key));
   return nonPlanKeys.length === 0;
-}
-
-function isWaitingForHumanInput(value, depth = 0) {
-  if (!value || depth > 4) {
-    return false;
-  }
-
-  if (typeof value === "string") {
-    return value === "waitingOnApproval" || value === "waitingOnUserInput";
-  }
-
-  if (Array.isArray(value)) {
-    return value.some((item) => isWaitingForHumanInput(item, depth + 1));
-  }
-
-  if (typeof value !== "object") {
-    return false;
-  }
-
-  for (const key of ["activeFlags", "active_flags", "active-flags", "flags", "status"]) {
-    if (isWaitingForHumanInput(value[key], depth + 1)) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 function booleanOption(value, fallback) {

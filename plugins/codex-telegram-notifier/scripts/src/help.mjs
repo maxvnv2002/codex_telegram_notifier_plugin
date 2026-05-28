@@ -31,7 +31,9 @@ Options:
   --codex-config PATH   Alternate Codex config.toml path.
   --message TEXT        Manual test notification text.
   --skip-codex-notify   Do not edit Codex config.toml notify command.
-  --idle-threshold-ms N  Suppress automatic notifications while user idle time is below N ms.
+  --idle-threshold-ms N  Treat the user as active while idle time is below N ms.
+  --suppress-when-codex-active
+                         Suppress automatic notifications only when Codex is active/on screen.
   --skip-setup          Install into Codex without registering a device.
   --skip-codex-config   Create local marketplace without editing ~/.codex/config.toml.
 
@@ -41,6 +43,8 @@ Environment:
   CODEX_TELEGRAM_DEVICE_NAME
   CODEX_TELEGRAM_CONFIG
   CODEX_TELEGRAM_IDLE_THRESHOLD_MS
+  CODEX_TELEGRAM_SUPPRESS_WHEN_CODEX_ACTIVE
+  CODEX_TELEGRAM_FORCE_CODEX_ACTIVE
   CODEX_TELEGRAM_SUPPRESS_WHEN_USER_ACTIVE
   CODEX_TELEGRAM_SUPPRESS_PLAN_TITLE_ONLY`);
 }
