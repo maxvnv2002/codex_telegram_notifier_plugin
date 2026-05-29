@@ -28,8 +28,11 @@ export function statusCommand(args) {
   console.log(`Pairing code stored: ${config.pairingCode ? "yes" : "no"}`);
   console.log("Device secret: hidden");
   console.log(`Codex notify wrapper: ${notifyStatus.installed ? "installed" : "not installed"}`);
+  console.log(`Codex notify wrapper mode: ${notifyStatus.wrapperMode}`);
+  console.log(`Stable wrapper: ${notifyStatus.stableWrapperPath}`);
+  console.log(`Stable wrapper file: ${notifyStatus.stableWrapperExists ? "present" : "missing"}`);
   console.log(`Original Codex notify preserved: ${notifyStatus.hasOriginalNotify ? "yes" : "no"}`);
   console.log(`Suppress plan title-only events: ${policy.suppressPlanTitleOnly ? "yes" : "no"}`);
-  console.log(`Suppress when user active: ${policy.suppressWhenUserActive ? "yes" : "no"}`);
+  console.log(`Suppress when Codex active: ${policy.suppressWhenCodexActive ? "yes" : "no"}`);
   console.log(`Idle threshold: ${policy.idleThresholdMs}ms`);
 }

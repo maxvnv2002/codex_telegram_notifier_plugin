@@ -8,8 +8,8 @@ Node.js Codex plugin that sends Telegram messages when Codex finishes work or wa
 2. Copy the pairing code from Telegram.
 3. Run plugin setup with that code.
 4. The plugin generates a local `deviceId` and `deviceSecret`, registers them with the backend, and stores local state outside this repo.
-5. On setup, the plugin updates `~/.codex/config.toml` and preserves the previous `notify` command.
-6. When a Codex turn ends, the wrapper runs the previous notifier first, then sends Telegram.
+5. On setup, the plugin writes a stable wrapper to `~/.codex-telegram-notifier/bin`, updates `~/.codex/config.toml`, and preserves the previous `notify` command.
+6. When a Codex turn ends, the stable wrapper resolves the newest installed plugin version, runs the previous notifier first, then sends Telegram.
 
 Local state is stored at:
 
@@ -109,13 +109,21 @@ You should receive a Telegram message in the chat that owns the pairing code.
 
 ## Codex Notify Wrapper
 
-Setup writes a top-level `notify` entry to `~/.codex/config.toml`:
+Setup writes a stable wrapper file:
 
-```toml
-notify = ["node", "<installed-plugin>/scripts/codex-telegram-notifier.mjs", "turn-ended"]
+```text
+~/.codex-telegram-notifier/bin/codex-telegram-notifier.mjs
 ```
 
-If a previous `notify` command exists, it is stored in `~/.codex-telegram-notifier/config.json` under `codexNotify.originalNotify`. The wrapper calls that original command first, then sends Telegram. This keeps the built-in Codex Desktop turn-ended notifier working.
+Then it writes a top-level `notify` entry to `~/.codex/config.toml`:
+
+```toml
+notify = ["node", "~/.codex-telegram-notifier/bin/codex-telegram-notifier.mjs", "turn-ended"]
+```
+
+The actual path is written as an absolute path for the current user. The stable wrapper scans Codex's plugin cache, chooses the newest installed `codex-telegram-notifier` version, and runs that version's real entrypoint. This keeps `~/.codex/config.toml` stable across plugin updates.
+
+If a previous `notify` command exists, it is stored in `~/.codex-telegram-notifier/config.json` under `codexNotify.originalNotify`. The resolved plugin wrapper calls that original command first, then sends Telegram. This keeps the built-in Codex Desktop turn-ended notifier working.
 
 A one-time backup is written next to the Codex config:
 
@@ -190,6 +198,7 @@ Optional environment overrides:
 
 ```bash
 CODEX_TELEGRAM_IDLE_THRESHOLD_MS=120000
+CODEX_TELEGRAM_STABLE_WRAPPER=~/.codex-telegram-notifier/bin/codex-telegram-notifier.mjs
 CODEX_TELEGRAM_SUPPRESS_WHEN_CODEX_ACTIVE=false
 CODEX_TELEGRAM_FORCE_CODEX_ACTIVE=false
 CODEX_TELEGRAM_SUPPRESS_PLAN_TITLE_ONLY=false

@@ -1,6 +1,6 @@
 {
   "name": "codex-telegram-notifier-plugin",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "type": "module",
   "description": "Codex plugin that sends completion notifications to Telegram through Codex Telegram Notifier.",

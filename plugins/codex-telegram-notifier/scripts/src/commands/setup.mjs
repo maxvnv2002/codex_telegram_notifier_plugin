@@ -135,6 +135,7 @@ function printSetupResult(configPath, config) {
   console.log(`Device id: ${config.deviceId}`);
   if (config.codexNotify?.enabled) {
     console.log(`Codex notify wrapper: installed in ${config.codexNotify.codexConfigPath}`);
+    console.log(`Stable wrapper: ${config.codexNotify.stableWrapperPath || "unknown"}`);
     console.log(`Original Codex notify preserved: ${config.codexNotify.originalNotify ? "yes" : "no"}`);
   }
 }
